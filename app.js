@@ -5,6 +5,9 @@ const { port } = require('./configs');
 const initLoaders = require('./loaders');
 const usersRouter = require('./routes/users');
 
+const https = require('https');
+const fs = require('fs');
+
 const app = express();
 
 initLoaders(app);
@@ -29,8 +32,20 @@ app.use(function (err, req, res, next) {
   res.json({ err });
 });
 
-const server = app.listen(port || 8080, () => {
-  console.log(`Server is running on ${port}`);
+// const server = app.listen(port || 8080, () => {
+//   console.log(`Server is running on ${port}`);
+// });
+
+const options = {
+  key: fs.readFileSync('./key.pem'),
+  cert: fs.readFileSync('./cert.pem'),
+  passphrase: 'stst',
+  requestCert: false,
+  rejectUnauthorized: false,
+};
+
+const server = https.createServer(options, app).listen(443, function () {
+  console.log('Https server listening on port ' + 443);
 });
 
 require('./configs/socket').init(server);
