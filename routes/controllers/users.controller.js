@@ -83,7 +83,7 @@ const getFriendList = async (req, res, next) => {
   const { user_id } = req.params;
 
   try {
-    const user = await User.findById(user_id);
+    const user = await User.findById(user_id).populate('friendList');
 
     res.status(200).json({ result: 'ok', friendList: user.friendList });
   } catch (err) {
@@ -112,6 +112,12 @@ const requestFriend = async (req, res, next) => {
 
     if (!targetUser) return res.status(204).end();
 
+    if(targetUser.friendList.includes(user_id)) {
+      return res
+        .status(200)
+        .json({ result: 'ok', message: `${targetUser.name}님은 이미 친구 상태 입니다.` });
+    }
+
     const addedUser = targetUser.friendRequestList.addToSet(user_id);
 
     if (!addedUser.length) {
@@ -119,6 +125,7 @@ const requestFriend = async (req, res, next) => {
         .status(200)
         .json({ result: 'ok', message: `${targetUser.name}님에게 이미 친구 요청을 보냈습니다.` });
     }
+
 
     await targetUser.save();
 
@@ -134,9 +141,13 @@ const responseFriendRequest = async (req, res, next) => {
 
   try {
     const user = await User.findById(user_id);
+    const targetUser = await User.findById(target_user_id);
 
     if (isAccepted) {
       user.friendList.push(target_user_id);
+      targetUser.friendList.push(user_id);
+
+      await targetUser.save();
     }
 
     user.friendRequestList.pull(target_user_id);
