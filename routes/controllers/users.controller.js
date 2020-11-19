@@ -109,6 +109,8 @@ const requestFriend = async (req, res, next) => {
 
   try {
     const targetUser = await User.findOne({ email: targetUserEmail });
+    const user = await User.findById(user_id);
+
 
     if (!targetUser) return res.status(204).end();
 
@@ -118,6 +120,12 @@ const requestFriend = async (req, res, next) => {
         .json({ result: 'ok', message: `${targetUser.name}님은 이미 친구 상태 입니다.` });
     }
 
+    if(targetUserEmail === user.email) {
+      return res
+        .status(200)
+        .json({ result: 'ok', message: '나에게 친구 신청을 할 수 없습니다.' });
+    }
+
     const addedUser = targetUser.friendRequestList.addToSet(user_id);
 
     if (!addedUser.length) {
@@ -125,7 +133,6 @@ const requestFriend = async (req, res, next) => {
         .status(200)
         .json({ result: 'ok', message: `${targetUser.name}님에게 이미 친구 요청을 보냈습니다.` });
     }
-
 
     await targetUser.save();
 
