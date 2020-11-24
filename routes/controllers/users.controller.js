@@ -111,7 +111,6 @@ const requestFriend = async (req, res, next) => {
     const targetUser = await User.findOne({ email: targetUserEmail });
     const user = await User.findById(user_id);
 
-
     if (!targetUser) return res.status(204).end();
 
     if(targetUser.friendList.includes(user_id)) {
