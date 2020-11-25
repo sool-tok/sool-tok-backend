@@ -111,32 +111,35 @@ const requestFriend = async (req, res, next) => {
     const targetUser = await User.findOne({ email: targetUserEmail });
     const user = await User.findById(user_id);
 
-
-    if (!targetUser) return res.status(204).end();
+    if (!targetUser) {
+      return res
+        .status(400)
+        .json('존재하지 않는 유저입니다.');
+    }
 
     if(targetUser.friendList.includes(user_id)) {
       return res
-        .status(200)
-        .json({ result: 'ok', message: `${targetUser.name}님은 이미 친구 상태 입니다.` });
+        .status(400)
+        .json(`${targetUser.name}님은 이미 친구 상태 입니다.`);
     }
 
     if(targetUserEmail === user.email) {
       return res
-        .status(200)
-        .json({ result: 'ok', message: '나에게 친구 신청을 할 수 없습니다.' });
+        .status(400)
+        .json('나에게 친구 신청을 할 수 없습니다.');
     }
 
     const addedUser = targetUser.friendRequestList.addToSet(user_id);
 
     if (!addedUser.length) {
       return res
-        .status(200)
-        .json({ result: 'ok', message: `${targetUser.name}님에게 이미 친구 요청을 보냈습니다.` });
+        .status(400)
+        .json(`${targetUser.name}님에게 이미 친구 요청을 보냈습니다.`);
     }
 
     await targetUser.save();
 
-    res.status(200).json({ result: 'ok', message: `${targetUser.name}님에게 친구 요청을 보냈습니다.` });
+    res.status(200).json({ message: `${targetUser.name}님에게 친구 요청을 보냈습니다.` });
   } catch (err) {
     next(err);
   }
