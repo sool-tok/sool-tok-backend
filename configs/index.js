@@ -11,8 +11,7 @@ module.exports = {
     dbName: 'sool-tok',
   },
   corsOptions: {
-    origin: 'https://192.168.0.98:3000',
-    // origin: 'http://localhost:3000',
+    origin: 'https://www.sool-tok.live',
     optionsSuccessStatus: 200,
   },
 };
