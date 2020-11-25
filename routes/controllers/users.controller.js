@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const createError = require('http-errors');
 
 const { tokenSecretKey } = require('../../configs');
 const User = require('../../models/User');
@@ -7,9 +8,7 @@ const googleLogin = async (req, res, next) => {
   const user = req.body;
   const { email, name, photoUrl } = user;
 
-  if (!user) {
-    return res.status(400).json({ result: 'error', message: 'Bad request' });
-  }
+  if (!user) return next(createError(400));
 
   try {
     const targetUser = await User.findOne({ email });
@@ -43,23 +42,20 @@ const googleLogin = async (req, res, next) => {
 
     res.status(200).json({ result: 'ok', token, user: targetUser });
   } catch (err) {
-    console.log(err);
-    res.status(401).json({ result: 'error', message: err.message });
+    next(createError(401));
   }
 };
 
 const tokenLogin = (req, res, next) => {
   const { token } = req.body;
 
-  if (!token) return res.status(400).json({ result: 'error', message: 'Bad request' });
+  if (!token) return next(createError(400));
 
   try {
     const decodedUser = jwt.verify(token, tokenSecretKey);
-
     res.status(200).json({ result: 'ok', token, user: decodedUser });
   } catch (err) {
-    console.log(err);
-    return res.status(401).json({ result: 'error', message: err.message });
+    next(createError(401));
   }
 };
 
@@ -74,7 +70,6 @@ const logoutUser = async (req, res, next) => {
 
     res.status(200).json({ result: 'ok' });
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
@@ -84,10 +79,9 @@ const getFriendList = async (req, res, next) => {
 
   try {
     const user = await User.findById(user_id).populate('friendList');
-
     res.status(200).json({ result: 'ok', friendList: user.friendList });
   } catch (err) {
-    return res.status(403).json({ result: 'error', message: 'Forbbiden' });
+    next(createError(403));
   }
 };
 
@@ -96,10 +90,9 @@ const getFriendRequestList = async (req, res, next) => {
 
   try {
     const user = await User.findById(user_id).populate('friendRequestList');
-
     res.status(200).json({ result: 'ok', friendRequestList: user.friendRequestList });
   } catch (err) {
-    return res.status(403).json({ result: 'error', message: 'Forbbiden' });
+    next(createError(403));
   }
 };
 
@@ -112,29 +105,21 @@ const requestFriend = async (req, res, next) => {
     const user = await User.findById(user_id);
 
     if (!targetUser) {
-      return res
-        .status(400)
-        .json('존재하지 않는 유저입니다.');
+      return next(createError(400, '존재하지 않는 유저입니다.'));
     }
 
     if(targetUser.friendList.includes(user_id)) {
-      return res
-        .status(400)
-        .json(`${targetUser.name}님은 이미 친구 상태 입니다.`);
+      return next(createError(400, `${targetUser.name}님은 이미 친구 상태 입니다.`));
     }
 
     if(targetUserEmail === user.email) {
-      return res
-        .status(400)
-        .json('나에게 친구 신청을 할 수 없습니다.');
+      return next(createError(400, '나에게 친구 신청을 할 수 없습니다.'));
     }
 
     const addedUser = targetUser.friendRequestList.addToSet(user_id);
 
     if (!addedUser.length) {
-      return res
-        .status(400)
-        .json(`${targetUser.name}님에게 이미 친구 요청을 보냈습니다.`);
+      return next(createError(400, `${targetUser.name}님에게 이미 친구 요청을 보냈습니다.`));
     }
 
     await targetUser.save();
