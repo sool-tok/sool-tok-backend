@@ -10,13 +10,13 @@ initLoaders(app);
 
 app.use('/users', usersRouter);
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   const error = new Error('Not Found');
   error.status = 404;
   next(error);
 });
 
-app.use(function (err, req, res, next) {
+app.use((err, req, res, next) => {
   console.log(err);
 
   if (process.env.NODE_ENV === 'production') {
@@ -25,7 +25,7 @@ app.use(function (err, req, res, next) {
   }
 
   res.status(err.status || 500);
-  res.json({ err });
+  res.json(err);
 });
 
 const server = app.listen(process.env.PORT || 8080, () => {
