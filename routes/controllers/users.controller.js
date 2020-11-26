@@ -42,7 +42,7 @@ const googleLogin = async (req, res, next) => {
 
     res.status(200).json({ result: 'ok', token, user: targetUser });
   } catch (err) {
-    next(createError(401));
+    next(err);
   }
 };
 
@@ -81,7 +81,7 @@ const getFriendList = async (req, res, next) => {
     const user = await User.findById(user_id).populate('friendList');
     res.status(200).json({ result: 'ok', friendList: user.friendList });
   } catch (err) {
-    next(createError(403));
+    next(err);
   }
 };
 
@@ -92,7 +92,7 @@ const getFriendRequestList = async (req, res, next) => {
     const user = await User.findById(user_id).populate('friendRequestList');
     res.status(200).json({ result: 'ok', friendRequestList: user.friendRequestList });
   } catch (err) {
-    next(createError(403));
+    next(err);
   }
 };
 
