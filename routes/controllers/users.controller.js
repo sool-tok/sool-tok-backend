@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const createError = require('http-errors');
 
 const { tokenSecretKey } = require('../../configs');
+const { MESSAGE, RESULT_OK } = require('../../configs/constants');
+
 const User = require('../../models/User');
 
 const googleLogin = async (req, res, next) => {
@@ -21,26 +23,26 @@ const googleLogin = async (req, res, next) => {
       });
 
       const token = jwt.sign({
-        _id: newUser._id,
-        email: newUser.email,
-        name: newUser.name,
-        photoUrl: newUser.photoUrl,
+          _id: newUser._id,
+          email: newUser.email,
+          name: newUser.name,
+          photoUrl: newUser.photoUrl,
       }, tokenSecretKey);
 
-      return res.status(201).json({ result: 'ok', token, user: newUser });
+      return res.status(201).json({ ...RESULT_OK, token, user: newUser });
     }
 
     targetUser.isOnline = true;
     await targetUser.save();
 
     const token = jwt.sign({
-      _id: targetUser._id,
-      email: targetUser.email,
-      name: targetUser.name,
-      photoUrl: targetUser.photoUrl,
+        _id: targetUser._id,
+        email: targetUser.email,
+        name: targetUser.name,
+        photoUrl: targetUser.photoUrl,
     }, tokenSecretKey);
 
-    res.status(200).json({ result: 'ok', token, user: targetUser });
+    res.status(200).json({ ...RESULT_OK, token, user: targetUser });
   } catch (err) {
     next(err);
   }
@@ -53,7 +55,7 @@ const tokenLogin = (req, res, next) => {
 
   try {
     const decodedUser = jwt.verify(token, tokenSecretKey);
-    res.status(200).json({ result: 'ok', token, user: decodedUser });
+    res.status(200).json({ ...RESULT_OK, token, user: decodedUser });
   } catch (err) {
     next(createError(401));
   }
@@ -68,7 +70,7 @@ const logoutUser = async (req, res, next) => {
     currentUser.isOnline = false;
     await currentUser.save();
 
-    res.status(200).json({ result: 'ok' });
+    res.status(200).json({ ...RESULT_OK });
   } catch (err) {
     next(err);
   }
@@ -79,7 +81,7 @@ const getFriendList = async (req, res, next) => {
 
   try {
     const user = await User.findById(user_id).populate('friendList');
-    res.status(200).json({ result: 'ok', friendList: user.friendList });
+    res.status(200).json({ ...RESULT_OK, friendList: user.friendList });
   } catch (err) {
     next(err);
   }
@@ -90,7 +92,7 @@ const getFriendRequestList = async (req, res, next) => {
 
   try {
     const user = await User.findById(user_id).populate('friendRequestList');
-    res.status(200).json({ result: 'ok', friendRequestList: user.friendRequestList });
+    res.status(200).json({ ...RESULT_OK, friendRequestList: user.friendRequestList });
   } catch (err) {
     next(err);
   }
@@ -105,26 +107,30 @@ const requestFriend = async (req, res, next) => {
     const user = await User.findById(user_id);
 
     if (!targetUser) {
-      return next(createError(400, '존재하지 않는 유저입니다.'));
+      return next(createError(400, MESSAGE.FRIEND_REQUEST.NOT_EXIST));
     }
 
-    if(targetUser.friendList.includes(user_id)) {
-      return next(createError(400, `${targetUser.name}님은 이미 친구 상태 입니다.`));
+    if (targetUser.friendList.includes(user_id)) {
+      return next(
+        createError(400, MESSAGE.FRIEND_REQUEST.ALREADY_FRIEND(targetUser.name)),
+      );
     }
 
-    if(targetUserEmail === user.email) {
-      return next(createError(400, '나에게 친구 신청을 할 수 없습니다.'));
+    if (targetUserEmail === user.email) {
+      return next(createError(400, MESSAGE.FRIEND_REQUEST.TO_ME));
     }
 
     const addedUser = targetUser.friendRequestList.addToSet(user_id);
 
     if (!addedUser.length) {
-      return next(createError(400, `${targetUser.name}님에게 이미 친구 요청을 보냈습니다.`));
+      return next(
+        createError(400, MESSAGE.FRIEND_REQUEST.ALREADY_REQUESTED(targetUser.name)),
+      );
     }
 
     await targetUser.save();
 
-    res.status(200).json({ message: `${targetUser.name}님에게 친구 요청을 보냈습니다.` });
+    res.status(200).json({ message: MESSAGE.FRIEND_REQUEST.SUCCESS(targetUser.name) });
   } catch (err) {
     next(err);
   }
@@ -149,7 +155,7 @@ const responseFriendRequest = async (req, res, next) => {
     await user.save();
     await user.execPopulate('friendRequestList');
 
-    res.status(200).json({ result: 'ok', friendRequestList: user.friendRequestList });
+    res.status(200).json({ ...RESULT_OK, friendRequestList: user.friendRequestList });
   } catch (err) {
     next(err);
   }
