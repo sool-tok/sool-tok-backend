@@ -1,15 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-const userController = require('./controllers/users.controller');
-const { verifyToken } = require('./middlewares/authorization');
+const { ROUTE } = require('../configs/constants');
 
-router.post('/login/google', userController.googleLogin);
-router.post('/login/token', userController.tokenLogin);
-router.post('/:user_id/logout', verifyToken, userController.logoutUser);
-router.get('/:user_id/friends', verifyToken, userController.getFriendList);
-router.get('/:user_id/friends/request', verifyToken, userController.getFriendRequestList);
-router.post('/:user_id/friends/request', verifyToken, userController.requestFriend);
-router.put('/:user_id/friends/request', verifyToken, userController.responseFriendRequest);
+const { verifyToken } = require('./middlewares/authorization');
+const userController = require('./controllers/users.controller');
+
+router.post(ROUTE.LOGIN.GOOGLE, userController.googleLogin);
+router.post(ROUTE.LOGIN.TOKEN, userController.tokenLogin);
+router.post(ROUTE.USER.LOGOUT, verifyToken, userController.logoutUser);
+router.get(ROUTE.USER.FRIENDS, verifyToken, userController.getFriendList);
+router.get(ROUTE.USER.FRIENDS.REQUEST, verifyToken, userController.getFriendRequestList);
+router.post(ROUTE.USER.FRIENDS.REQUEST, verifyToken, userController.requestFriend);
+router.put(ROUTE.USER.FRIENDS.REQUEST, verifyToken, userController.responseFriendRequest);
 
 module.exports = router;
