@@ -28,9 +28,28 @@ app.use((err, req, res, next) => {
   res.json(err);
 });
 
-const server = app.listen(process.env.PORT || 8080, () => {
-  console.log('server listening');
-});
+let server;
+
+if (process.env.NODE_ENV === 'development') {
+  const https = require('https');
+  const fs = require('fs');
+
+  const options = {
+    key: fs.readFileSync('./key.pem'),
+    cert: fs.readFileSync('./cert.pem'),
+    passphrase: 'stst',
+    requestCert: false,
+    rejectUnauthorized: false,
+  };
+
+  server = https.createServer(options, app).listen(443, function () {
+    console.log('Https server listening');
+  });
+} else {
+  server = app.listen(process.env.PORT || 8080, () => {
+    console.log('server listening');
+  });
+}
 
 require('./configs/socket').init(server);
 require('./lib/socketHandler');
