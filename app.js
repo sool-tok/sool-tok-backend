@@ -1,5 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const createError = require('http-errors');
+
+const { ROUTE } = require('./configs/constants');
 
 const initLoaders = require('./loaders');
 const usersRouter = require('./routes/users');
@@ -8,19 +11,17 @@ const app = express();
 
 initLoaders(app);
 
-app.use('/users', usersRouter);
+app.use(ROUTE.USERS, usersRouter);
 
 app.use((req, res, next) => {
-  const error = new Error('Not Found');
-  error.status = 404;
-  next(error);
+  next(createError(404));
 });
 
 app.use((err, req, res, next) => {
   console.log(err);
 
   if (process.env.NODE_ENV === 'production') {
-    if (err instanceof mongoose.Error) err = new Error('Internal Server Error');
+    if (err instanceof mongoose.Error) err = createError(500);
     err.stack = null;
   }
 
