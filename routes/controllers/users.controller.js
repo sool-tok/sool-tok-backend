@@ -22,12 +22,15 @@ const googleLogin = async (req, res, next) => {
         photoUrl,
       });
 
-      const token = jwt.sign({
+      const token = jwt.sign(
+        {
           _id: newUser._id,
           email: newUser.email,
           name: newUser.name,
           photoUrl: newUser.photoUrl,
-      }, tokenSecretKey);
+        },
+        tokenSecretKey,
+      );
 
       return res.status(201).json({ ...RESULT_OK, token, user: newUser });
     }
@@ -35,12 +38,15 @@ const googleLogin = async (req, res, next) => {
     targetUser.isOnline = true;
     await targetUser.save();
 
-    const token = jwt.sign({
+    const token = jwt.sign(
+      {
         _id: targetUser._id,
         email: targetUser.email,
         name: targetUser.name,
         photoUrl: targetUser.photoUrl,
-    }, tokenSecretKey);
+      },
+      tokenSecretKey,
+    );
 
     res.status(200).json({ ...RESULT_OK, token, user: targetUser });
   } catch (err) {
