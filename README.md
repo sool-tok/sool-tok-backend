@@ -15,13 +15,15 @@
 
 술톡은 친구들과 함께 화상통화를 하며 게임을 즐길 수 있는 멀티 스트리밍 웹 애플리케이션 입니다.
 
-#### 시연 영상 (유튜브 링크)
+#### 시연 영상
 
 [![구동 영상](/readmeAssets/sool-tok-gif.gif)](https://youtu.be/FXCxWlxejZ0)
 
+[유튜브 링크](https://www.sool-tok.live)
+
 #### 배포 사이트
 
-[링크](https://www.sool-tok.live)
+[배포 링크](https://www.sool-tok.live)
 
 #### Repository
 
