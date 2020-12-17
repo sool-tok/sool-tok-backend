@@ -110,7 +110,6 @@ const requestFriend = async (req, res, next) => {
 
   try {
     const targetUser = await User.findOne({ email: targetUserEmail });
-    const user = await User.findById(user_id);
 
     if (!targetUser) {
       return next(createError(400, MESSAGE.FRIEND_REQUEST.NOT_EXIST));
@@ -121,6 +120,8 @@ const requestFriend = async (req, res, next) => {
         createError(400, MESSAGE.FRIEND_REQUEST.ALREADY_FRIEND(targetUser.name)),
       );
     }
+
+    const user = await User.findById(user_id);
 
     if (targetUserEmail === user.email) {
       return next(createError(400, MESSAGE.FRIEND_REQUEST.TO_ME));
